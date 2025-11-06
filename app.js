@@ -4,6 +4,9 @@ const addButton = document.getElementById('addButton');
 const itemInput = document.getElementById('item');
 const menuContainer = document.getElementById('menuContainer');
 
+const addPizzaButton = document.getElementById('addPizza');
+const pizzaInput = document.getElementById('itemPizza');
+
 async function writeUserData(parentId, childId) {
   console.log('write ran');
   console.log(`parentId: ${parentId}, childId: ${childId}`);
@@ -44,6 +47,45 @@ async function readUserData(parentId, childId) { // a single snapshot of the dat
   return data;
 }
 
+function createPizzaDiv(name, parentContainer) {
+  let pizzaContainer = document.createElement('div');
+  let modContainer = document.createElement('div');
+  let optionContainer = document.createElement('div');
+  optionContainer.id = "Pizza's/" + name;
+  pizzaContainer.append(modContainer, optionContainer);
+  parentContainer.append(pizzaContainer);
+
+  let pizzaTitle = document.createElement('span');
+  pizzaTitle.textContent = name;
+  let removeButton = document.createElement('button');
+  removeButton.textContent = 'remove';
+  removeButton.addEventListener('click', () => {
+      removeUserData("Pizza's", name);
+      while (pizzaContainer.firstChild) {
+        pizzaContainer.removeChild(pizzaContainer.firstChild);
+      }
+  });
+  modContainer.append(pizzaTitle, removeButton);
+
+  let optionInput = document.createElement('input');
+  optionInput.type = 'text';
+  optionInput.placeholder = 'add option';
+  let addButton = document.createElement('button');
+  addButton.textContent = 'add';
+  addButton.addEventListener('click', () => {
+    const inputVal = optionInput.value;
+    optionInput.value = '';
+    if (inputVal != '' && inputVal != null){
+      const parentId = optionContainer.id
+      const result = writeUserData(parentId, inputVal);
+      if (result) {
+        createItemDiv(inputVal, optionContainer);
+      }
+    }
+  });
+  modContainer.append(optionInput, addButton);
+}
+
 function createItemDiv(name, parentContainer) {
   let itemContainer = document.createElement('div');
   itemContainer.className = 'itemContainer';
@@ -52,7 +94,6 @@ function createItemDiv(name, parentContainer) {
   let removeItem = document.createElement('button');
 
   // add ingredient
-  let addIngredientContainer = document.createElement('div');
   let inputIngedient = document.createElement('input');
   inputIngedient.type = 'text';
   inputIngedient.placeholder = 'add ingredient';
@@ -60,11 +101,11 @@ function createItemDiv(name, parentContainer) {
   addIngredient.textContent = 'add';
 
   itemName.textContent = name;
-  itemDiv.id = name;
+  itemDiv.id = parentContainer.id + '/' + name; // parent path must be ID
   removeItem.textContent = 'remove';
 
   removeItem.addEventListener('click', () => {
-    removeUserData('', itemDiv.id);
+    removeUserData('Other', itemDiv.id);
     while (itemContainer.firstChild) {
       itemContainer.removeChild(itemContainer.firstChild);
     }
@@ -73,16 +114,18 @@ function createItemDiv(name, parentContainer) {
   addIngredient.addEventListener('click', () => {
     const inputVal = inputIngedient.value;
     if (inputVal != '' && inputVal != null){
-      writeUserData(itemDiv.id, inputVal);
-      createIngredientDiv(inputVal, itemDiv);
+      const parentNode = itemDiv.id; // path name must be given
+      const result = writeUserData(parentNode, inputVal);
+      if (result) {
+        createIngredientDiv(inputVal, itemDiv);
+      }
     }
   });
 
   itemDiv.append(itemName, removeItem);
-  addIngredientContainer.append(inputIngedient, addIngredient);
-  itemContainer.append(itemDiv, addIngredientContainer);
+  itemDiv.append(inputIngedient, addIngredient);
+  itemContainer.append(itemDiv);
   parentContainer.append(itemContainer);
-  console.log(name);
 }
 
 function createIngredientDiv(name, parentContainer){
@@ -110,31 +153,63 @@ function createIngredientDiv(name, parentContainer){
 }
 
 // function createItem(userId)
-addButton.addEventListener('click', () => {
-  const inputVal = itemInput.value;
-  if (inputVal != '' && inputVal != null){
-    const result = writeUserData('', inputVal);
+// addButton.addEventListener('click', () => {
+//   const inputVal = itemInput.value;
+//   if (inputVal != '' && inputVal != null){
+//     const result = writeUserData('', inputVal);
+//     if (result) {
+//       createItemDiv(inputVal, menuContainer);
+//     }
+//   }
+
+// });
+
+addPizzaButton.addEventListener('click', () => {
+  const inputPizza = pizzaInput.value;
+  if (inputPizza != '' && inputPizza != null){
+    const result = writeUserData("Pizza's", inputPizza);
     if (result) {
-      createItemDiv(inputVal, menuContainer);
+      createPizzaDiv(inputPizza, menuContainer);
     }
   }
-
 });
 
+async function showPizzaMenu() {
+  let myData = await readUserData("Pizza's", '');
+  console.log(myData);
+  for (const key in myData) {
+    // console.log(`Key: ${key}`);
+    createPizzaDiv(key, menuContainer);
+    const keyPath = "Pizza's/" + key;
+    let keyDiv = document.getElementById(keyPath); // here is the problem // path name must be given
+    for (const item in myData[key]) {  
+        createItemDiv(item, keyDiv);
+        const itemPath = keyPath + '/' + item;
+        let itemDiv = document.getElementById(itemPath);
+        // console.log(itemDiv)
+      for (const ingredient in myData[key][item]) {
+        createIngredientDiv(ingredient, itemDiv);
+      }
+    }
+  }
+}
+
 async function showCurrentMenu() {
-  let myData = await readUserData('', '');
+  let myData = await readUserData('Other', '');
   console.log(myData);
   for (const key in myData) {
     createItemDiv(key, menuContainer);
-    let keyDiv = document.getElementById(key);
+    let keyDiv = document.getElementById("Other/" + key);
     for (const ingredient in myData[key]) {
+      console.log(ingredient);
       createIngredientDiv(ingredient, keyDiv);
     }
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  showCurrentMenu();
+  showPizzaMenu();
+  // showCurrentMenu();
 });
 
 
