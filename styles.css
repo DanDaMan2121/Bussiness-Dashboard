@@ -1,4 +1,22 @@
 #menuContainer {
+    /* display: block; */
+    display: flex;
+    justify-content: space-around;
+    /* flex-direction: row; */
+}
+
+#Other, #pizzaContainer {
     display: flex;
     flex-direction: column;
+}
+
+.modContainer, .ingredientDiv {
+    display: flex;
+    justify-content: space-between;
+    /* flex-direction: column; */
+    /* width: ; */
+}
+
+.modContainer span {
+    color: brown;
 }

@@ -1,11 +1,13 @@
 import { getDatabase, ref, set, remove, onValue, child, get} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
-
+import {} from './firebase.js';
 const addButton = document.getElementById('addButton');
 const itemInput = document.getElementById('item');
-const menuContainer = document.getElementById('menuContainer');
+const menuContainer = document.getElementById('Other');
 
 const addPizzaButton = document.getElementById('addPizza');
 const pizzaInput = document.getElementById('itemPizza');
+
+const pizzaContainer = document.getElementById('pizzaContainer');
 
 async function writeUserData(parentId, childId) {
   console.log('write ran');
@@ -90,6 +92,8 @@ function createItemDiv(name, parentContainer) {
   let itemContainer = document.createElement('div');
   itemContainer.className = 'itemContainer';
   let itemDiv = document.createElement('div');
+  let modContainer = document.createElement('div');
+  modContainer.className = 'modContainer';
   let itemName = document.createElement('span');
   let removeItem = document.createElement('button');
 
@@ -113,8 +117,10 @@ function createItemDiv(name, parentContainer) {
 
   addIngredient.addEventListener('click', () => {
     const inputVal = inputIngedient.value;
+    inputIngedient.value = '';
     if (inputVal != '' && inputVal != null){
       const parentNode = itemDiv.id; // path name must be given
+      console.log(parentNode);
       const result = writeUserData(parentNode, inputVal);
       if (result) {
         createIngredientDiv(inputVal, itemDiv);
@@ -122,7 +128,8 @@ function createItemDiv(name, parentContainer) {
     }
   });
 
-  itemDiv.append(itemName, removeItem);
+  modContainer.append(itemName, removeItem);
+  itemDiv.append(modContainer);
   itemDiv.append(inputIngedient, addIngredient);
   itemContainer.append(itemDiv);
   parentContainer.append(itemContainer);
@@ -152,24 +159,23 @@ function createIngredientDiv(name, parentContainer){
 
 }
 
-// function createItem(userId)
-// addButton.addEventListener('click', () => {
-//   const inputVal = itemInput.value;
-//   if (inputVal != '' && inputVal != null){
-//     const result = writeUserData('', inputVal);
-//     if (result) {
-//       createItemDiv(inputVal, menuContainer);
-//     }
-//   }
+addButton.addEventListener('click', () => {
+  const inputVal = itemInput.value;
+  if (inputVal != '' && inputVal != null){
+    const result = writeUserData('Other', inputVal);
+    if (result) {
+      createItemDiv(inputVal, menuContainer);
+    }
+  }
 
-// });
+});
 
 addPizzaButton.addEventListener('click', () => {
   const inputPizza = pizzaInput.value;
   if (inputPizza != '' && inputPizza != null){
     const result = writeUserData("Pizza's", inputPizza);
     if (result) {
-      createPizzaDiv(inputPizza, menuContainer);
+      createPizzaDiv(inputPizza, pizzaContainer);
     }
   }
 });
@@ -179,13 +185,14 @@ async function showPizzaMenu() {
   console.log(myData);
   for (const key in myData) {
     // console.log(`Key: ${key}`);
-    createPizzaDiv(key, menuContainer);
+    createPizzaDiv(key, pizzaContainer);
     const keyPath = "Pizza's/" + key;
     let keyDiv = document.getElementById(keyPath); // here is the problem // path name must be given
     for (const item in myData[key]) {  
         createItemDiv(item, keyDiv);
         const itemPath = keyPath + '/' + item;
         let itemDiv = document.getElementById(itemPath);
+        itemDiv.className = 'itemDiv';
         // console.log(itemDiv)
       for (const ingredient in myData[key][item]) {
         createIngredientDiv(ingredient, itemDiv);
@@ -198,10 +205,11 @@ async function showCurrentMenu() {
   let myData = await readUserData('Other', '');
   console.log(myData);
   for (const key in myData) {
+    const keyPath = "Other/" + key
     createItemDiv(key, menuContainer);
-    let keyDiv = document.getElementById("Other/" + key);
+    let keyDiv = document.getElementById(keyPath);
     for (const ingredient in myData[key]) {
-      console.log(ingredient);
+      // console.log(ingredient);
       createIngredientDiv(ingredient, keyDiv);
     }
   }
@@ -209,7 +217,7 @@ async function showCurrentMenu() {
 
 document.addEventListener('DOMContentLoaded', () => {
   showPizzaMenu();
-  // showCurrentMenu();
+  showCurrentMenu();
 });
 
 
