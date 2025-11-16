@@ -6,8 +6,11 @@ const menuContainer = document.getElementById('Other');
 
 const addPizzaButton = document.getElementById('addPizza');
 const pizzaInput = document.getElementById('itemPizza');
-
 const pizzaContainer = document.getElementById('pizzaContainer');
+
+const addPizzMenuButton = document.getElementById('addPizzaMenu');
+const pizazMenuInput = document.getElementById('itemPizzaMenu');
+const pizzaMenuContainer = document.getElementById('pizzaMenu');
 
 async function writeUserData(parentId, childId) {
   console.log('write ran');
@@ -49,11 +52,12 @@ async function readUserData(parentId, childId) { // a single snapshot of the dat
   return data;
 }
 
-function createPizzaDiv(name, parentContainer) {
+function createPizzaDiv(myKey, parentContainer, name) {
   let pizzaContainer = document.createElement('div');
   let modContainer = document.createElement('div');
   let optionContainer = document.createElement('div');
-  optionContainer.id = "Pizza's/" + name;
+  // console.log(myKey);
+  optionContainer.id = myKey + '/' + name;
   pizzaContainer.append(modContainer, optionContainer);
   parentContainer.append(pizzaContainer);
 
@@ -62,7 +66,7 @@ function createPizzaDiv(name, parentContainer) {
   let removeButton = document.createElement('button');
   removeButton.textContent = 'remove';
   removeButton.addEventListener('click', () => {
-      removeUserData("Pizza's", name);
+      removeUserData(myKey, name);
       while (pizzaContainer.firstChild) {
         pizzaContainer.removeChild(pizzaContainer.firstChild);
       }
@@ -171,22 +175,22 @@ addButton.addEventListener('click', () => {
 });
 
 addPizzaButton.addEventListener('click', () => {
-  const inputPizza = pizzaInput.value;
+  const inputPizza = pizazMenuInput.value;
   if (inputPizza != '' && inputPizza != null){
-    const result = writeUserData("Pizza's", inputPizza);
+    const result = writeUserData('PizzaMenu', inputPizza);
     if (result) {
-      createPizzaDiv(inputPizza, pizzaContainer);
+      createPizzaDiv(key, pizzaMenuContainer, inputPizza);
     }
   }
 });
 
-async function showPizzaMenu() {
-  let myData = await readUserData("Pizza's", '');
+async function showPizzaMenu(startPath, container) {
+  let myData = await readUserData(startPath, '');
   console.log(myData);
   for (const key in myData) {
     // console.log(`Key: ${key}`);
-    createPizzaDiv(key, pizzaContainer);
-    const keyPath = "Pizza's/" + key;
+    createPizzaDiv(startPath, container, key);
+    const keyPath = startPath + '/' + key;
     let keyDiv = document.getElementById(keyPath); // here is the problem // path name must be given
     for (const item in myData[key]) {  
         createItemDiv(item, keyDiv);
@@ -216,7 +220,8 @@ async function showCurrentMenu() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  showPizzaMenu();
+  showPizzaMenu("Pizza's", pizzaContainer);
+  showPizzaMenu('PizzaMenu', pizzaMenuContainer);
   showCurrentMenu();
 });
 
