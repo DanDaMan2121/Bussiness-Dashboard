@@ -1,5 +1,7 @@
 import { getDatabase, ref, set, remove, onValue, child, get} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
 import {} from './firebase.js';
+import { Pizza } from './pizzClass.js';
+
 const addButton = document.getElementById('addButton');
 const itemInput = document.getElementById('item');
 const menuContainer = document.getElementById('Other');
@@ -175,7 +177,19 @@ addButton.addEventListener('click', () => {
 });
 
 addPizzaButton.addEventListener('click', () => {
+  const inputPizza = pizzaInput.value;
+  if (inputPizza != '' && inputPizza != null){
+    const result = writeUserData("Pizza's", inputPizza);
+    if (result) {
+      createPizzaDiv(key, pizzaContainer, inputPizza);
+    }
+  }
+});
+
+
+addPizzMenuButton.addEventListener('click', () => {
   const inputPizza = pizazMenuInput.value;
+  pizzaInput.value = '';
   if (inputPizza != '' && inputPizza != null){
     const result = writeUserData('PizzaMenu', inputPizza);
     if (result) {
@@ -183,6 +197,8 @@ addPizzaButton.addEventListener('click', () => {
     }
   }
 });
+
+
 
 async function showPizzaMenu(startPath, container) {
   let myData = await readUserData(startPath, '');
