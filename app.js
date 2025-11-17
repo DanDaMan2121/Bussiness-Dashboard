@@ -29,6 +29,46 @@ async function writeUserData(parentId, childId) {
   });
 }
 
+async function wirtePizzaData(parentId, childId,  myPizza) {
+  // console.log('pizzaWrite');
+  // const db = getDatabase();
+  // await set(ref(db, parentId + '/' + childId), '')
+  // .then(() => {
+  //   console.log('data set successfully');
+  //   return true;
+  // })
+  // .catch ((error) => {
+  //   console.error(`Error setting node: ${error}`);
+  //   return false;
+  // });
+  const startPath = parentId + '/' + childId;
+  console.log(myPizza);
+  readPizza(startPath, pizzaMenuContainer, myPizza);
+
+  
+
+}
+
+function readPizza(startPath, container, myData) {
+for (const key in myData) {
+  if (key != 'PID' && key != 'quantity') {
+    createPizzaDiv(startPath, container, key);
+      const keyPath = startPath + '/' + key;
+      let keyDiv = document.getElementById(keyPath); // here is the problem // path name must be given
+      for (const item in myData[key]) {  
+          createItemDiv(item, keyDiv);
+          const itemPath = keyPath + '/' + item;
+          let itemDiv = document.getElementById(itemPath);
+          itemDiv.className = 'itemDiv';
+          // console.log(itemDiv)
+        for (const ingredient in myData[key][item]) {
+          createIngredientDiv(ingredient, itemDiv);
+        }
+      }
+    }
+  }
+}
+
 function removeUserData(parentId, userId) {
   console.log('remove ran');
   console.log(`parentId: ${parentId}, userId: ${userId}`);
@@ -178,8 +218,9 @@ addButton.addEventListener('click', () => {
 
 addPizzaButton.addEventListener('click', () => {
   const inputPizza = pizzaInput.value;
+  const key = "Pizza's";
   if (inputPizza != '' && inputPizza != null){
-    const result = writeUserData("Pizza's", inputPizza);
+    const result = writeUserData(key, inputPizza);
     if (result) {
       createPizzaDiv(key, pizzaContainer, inputPizza);
     }
@@ -190,10 +231,12 @@ addPizzaButton.addEventListener('click', () => {
 addPizzMenuButton.addEventListener('click', () => {
   const inputPizza = pizazMenuInput.value;
   pizzaInput.value = '';
-  if (inputPizza != '' && inputPizza != null){
-    const result = writeUserData('PizzaMenu', inputPizza);
+  const key = 'PizzaMenu';
+  let newPizza = new Pizza();
+  if (inputPizza != '' && inputPizza != null) {
+    const result = wirtePizzaData(key, pizazMenuInput, newPizza);
     if (result) {
-      createPizzaDiv(key, pizzaMenuContainer, inputPizza);
+      // createPizzaDiv(key, pizzaMenuContainer, inputPizza);
     }
   }
 });

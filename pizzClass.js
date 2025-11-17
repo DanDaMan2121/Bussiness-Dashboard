@@ -1,5 +1,6 @@
 export class Pizza {
     constructor(
+        // name = '',
         PID = null,
         crust = 'Hand Tossed',
         size = 'Medium (12")',
@@ -7,6 +8,7 @@ export class Pizza {
         sauce = ['Tomato Sauce', 'Normal'],
         toppings = []
     ) {
+        // this.name = name;
         this.PID = PID;
         this.crust = crust;
         this.size = size;
