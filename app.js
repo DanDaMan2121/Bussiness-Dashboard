@@ -123,6 +123,7 @@ function createOption(path, option) {
 
   let optionSpan = document.createElement('span');
   optionSpan.textContent = option;
+  optionSpan.className = 'optionSpan';
 
   let removeButton = document.createElement('button');
   removeButton.textContent = 'remove';
@@ -239,7 +240,9 @@ function createItemDiv(item) {
 function createOptionDiv(option, id) {
   const optionDiv = document.createElement('div');
   optionDiv.id = option + ' ' + id;
+  optionDiv.className = 'optionContainer';
   const optionSpan = document.createElement('span');
+  optionSpan.className = 'optionSpan';
   optionSpan.textContent = option;
 
   optionDiv.append(optionSpan);
@@ -265,7 +268,9 @@ async function editMenu(data) {
 
 function editOptionDiv(option) {
   const optionDiv = document.createElement('div');
+  optionDiv.className = 'optionContainer';
   const optionSpan = document.createElement('span');
+  optionSpan.className = 'optionSpan';
   optionSpan.textContent = option;
   optionDiv.append(optionSpan);
   return optionDiv;
@@ -273,6 +278,7 @@ function editOptionDiv(option) {
 
 function editIngredientDiv(ingredient) {
   const iDiv = document.createElement('div');
+  iDiv.className = 'iContainer';
   const iSpan = document.createElement('span');
   iSpan.textContent = ingredient;
 
@@ -337,7 +343,7 @@ async function loadItem(path, itemName) {
     const optionDiv = createOptionDiv(option, itemDiv.id);
     itemDiv.append(optionDiv);
   }
-  pizzaContainer.append(itemDiv); // current div its appending ot
+  pizzaContainer.append(itemDiv); // current div its appending to
 }
 
 addItemButton(ingredientContainer);

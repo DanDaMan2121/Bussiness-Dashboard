@@ -12,11 +12,22 @@
 
 .modContainer, .ingredientDiv {
     display: flex;
-    justify-content: space-between;
+    justify-items: space-between;
     /* flex-direction: column; */
     /* width: ; */
 }
 
-.modContainer span {
+.optionSpan {
     color: brown;
+}
+
+.optionContainer {
+    display: flex;
+    flex-direction: column;
+    /* justify-content: space-between; */
+}
+
+.iContainer {
+    display: flex;
+    justify-content: space-between;
 }
