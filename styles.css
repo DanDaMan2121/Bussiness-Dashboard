@@ -30,4 +30,9 @@
 .iContainer {
     display: flex;
     justify-content: space-between;
+    padding-bottom: 3px;
+}
+
+.intReq {
+    width: 20px;
 }

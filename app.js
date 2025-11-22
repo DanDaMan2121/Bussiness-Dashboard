@@ -1,13 +1,14 @@
-import { writeUserData, removeUserData, readUserData, updateUserData } from './firebase.js';
+import { writeUserData, removeUserData, readUserData, updateUserData, setUserData } from './firebase.js';
 import { Pizza } from './pizzClass.js';
 
 
-// function createOption
 const menuContainer = document.getElementById('menuContainer');
 const otherContainer = document.getElementById('otherContainer');
 const pizzaContainer = document.getElementById('pizzaContainer');
 const ingredientContainer = document.getElementById('ingredientContainer');
-
+const editContainers = document.createElement('div');
+editContainers.id = 'editContainers';
+menuContainer.append(editContainers);
 // functions for creating a menu template
 
 function addItemButton(container) {
@@ -98,6 +99,8 @@ function createItem(path, item) {
   });
   
 
+
+
   let itemInput = document.createElement('input');
   itemInput.type = 'text';
   itemInput.placeholder = 'option';
@@ -112,12 +115,16 @@ function createItem(path, item) {
       writeUserData(currentPath, currentInput);
     }
   });
+  const addOptionContainer = document.createElement('div');
+  addOptionContainer.append(itemInput, addOptionButton);
+  addOptionContainer.className = 'addOptionContainer';
 
-  itemContainer.append(itemSpan, createObjectInput, createItemButton, removeButton, itemInput, addOptionButton);
+
+  itemContainer.append(itemSpan, createObjectInput, createItemButton, removeButton, addOptionContainer);
   return itemContainer;
 }
 
-function createOption(path, option) {
+async function createOption(path, option) {
   const currentPath = path + '/' + option;
   let optionContainer = document.createElement('div');
 
@@ -147,8 +154,26 @@ function createOption(path, option) {
       writeUserData(currentPath, currentInput);
     }
   });
+  const intRequirement = document.createElement('input');
+  intRequirement.type = 'number';
+  intRequirement.id = option + 'int';
+  const existReq = await readUserData(currentPath, 'req');
+  if (existReq) {
+    // console.log(readUserData(currentPath, 'req'));
+    intRequirement.value = parseInt(await readUserData(currentPath, 'req'));
+  } else {
+    intRequirement.textContent = '0';
+  }
+  
+  intRequirement.min = 0;
+  intRequirement.className = 'intReq';
+  intRequirement.addEventListener('change', () => {
+    const input = intRequirement.value;
+    const minreq = currentPath + '/' + 'req';
+    setUserData(minreq, input);
 
-  optionContainer.append(optionSpan, removeButton, optionInput, addButton);
+  })
+  optionContainer.append(optionSpan, removeButton, optionInput, addButton, intRequirement);
 
   return optionContainer;
 }
@@ -156,6 +181,7 @@ function createOption(path, option) {
 function createIngredient(path, ingredient) {
   const currentPath = path + '/' + ingredient;
   let iContainer = document.createElement('div');
+  iContainer.className = 'iContainer';
   
   let iSpan = document.createElement('span');
   iSpan.textContent = ingredient;
@@ -184,13 +210,15 @@ async function load(path) {
       let optionPath = nextPath + '/' + option;
       let optionDiv = null;
       if (option != null && option != '') {
-        optionDiv = createOption(nextPath, option);
+        optionDiv = await createOption(nextPath, option);
         curItemDiv.append(optionDiv);
       }
       for (const ingredient in data[item][option]) {
         if (ingredient != null && ingredient != '') {
-          const iDiv = createIngredient(optionPath, ingredient);
-          optionDiv.append(iDiv);
+          if (ingredient != 'req') {
+            const iDiv = createIngredient(optionPath, ingredient);
+            optionDiv.append(iDiv);
+          }
         // console.log(ingredient);
         }
       }
@@ -229,6 +257,23 @@ function createItemDiv(item) {
         const idIndex = currentId.lastIndexOf(" ") + 1;
         const newId = currentId.slice(0, idIndex) + input;
         childElements[i + 3].id = newId;
+        const subChildElements = childElements[i + 3].children;
+        const subLength = subChildElements.length - 1;
+        if (subLength > 0) {
+          // console.log(subChildElements[2]);
+          for (let j = 0; j < subLength; j++) {
+            const subId = subChildElements[j + 1].id;
+            const currentOption = subId.slice(0, idIndex);
+            const previousId = currentId.slice(idIndex); // previous name
+            const currentIIndex = subId.indexOf(previousId, idIndex); // index of previous name
+            const currentI = subId.slice(currentIIndex + 1); // substring of current ingredient 
+            
+            const newSubId = currentOption + input + currentI;
+            // console.log(newSubId);
+            subChildElements[j + 1].id = newSubId;
+          }
+
+        }
       }
     
     }
@@ -258,11 +303,22 @@ async function editMenu(data) {
     const editOption = editOptionDiv(option);
     editContainer.append(editOption);
     for(const ingredient in data[option]) {
-      const editIngredient = editIngredientDiv(ingredient);
-      editOption.append(editIngredient);
+      if (ingredient != 'req') {
+        const editIngredient = editIngredientDiv(ingredient);
+        editOption.append(editIngredient);
+      }
     }
   }
+  const editButton = document.createElement('button');
+  editButton.textContent = 'done edit';
+  editButton.addEventListener('click', () => {
+    editContainer.style.display = 'none';
+    // lowkey hard coded
+    ingredientContainer.style.display = 'flex';
+    ingredientContainer.style.flexDirection = 'column';
+  });
   editContainer.style.display = 'none';
+  editContainer.append(editButton);
   return editContainer;
 }
 
@@ -283,6 +339,7 @@ function editIngredientDiv(ingredient) {
   iSpan.textContent = ingredient;
 
   const modButton = document.createElement('button');
+  modButton.id = 'iContainer' + ingredient;
   modButton.textContent = 'add';
 
   modButton.addEventListener('click', () => {  // needs to update the item that is being modified
@@ -290,14 +347,36 @@ function editIngredientDiv(ingredient) {
     const optionId = optionContainer.children[0].textContent;
     const editContainer = optionContainer.parentElement;
     const ref = optionId + ' ' + editContainer.getAttribute('ref');
-    // console.log(ref);
+    console.log(ref); // ref
+
+    const intRequirement = optionId + 'int';
+    // console.log(`optionId: ${optionId}, int: ${intRequirement}`);
+
     const myDiv = document.getElementById(ref);
+    const myIntDiv = document.getElementById(intRequirement);
+    const myInt = myIntDiv.value;
+    
 
     if (modButton.textContent == 'add') {
+      const divChildren = myDiv.childNodes;
+      const divLength = divChildren.length - 1;
+      // console.log(`divLength: ${divLength}, myInt: ${myInt}`);
       const newSpan = document.createElement('span');
       newSpan.textContent = ingredient;
       newSpan.id = ref + ingredient;
-      myDiv.append(newSpan);
+      if (myInt == 0 || myInt > divLength) {
+        myDiv.append(newSpan);
+      } else if (myInt <= divLength) {
+        const childToRemove = divChildren[1];
+        const prevId = childToRemove.id.slice(ref.length);
+        // console.log(childToRemove.id, `Ref: ${prevId}`);
+        const prevBtn = document.getElementById('iContainer' + prevId);
+        prevBtn.textContent = 'add';
+        myDiv.removeChild(childToRemove);
+        myDiv.append(newSpan);
+
+        
+      }
       modButton.textContent = 'remove';
     } else if (modButton.textContent == 'remove') {
       let foundSpan = document.getElementById(ref + ingredient);
@@ -314,30 +393,26 @@ async function loadItem(path, itemName) {
   const data = await readUserData(path, '');
   
   const editContainer = await editMenu(data);
-  menuContainer.append(editContainer);
+  editContainers.append(editContainer);
 
   const itemIndex = path.lastIndexOf('/');
   const startPath = path.slice(0, itemIndex)
   const currentObjectPath = path.slice(itemIndex + 1);
   console.log(`startPath: ${startPath}, itemName: ${currentObjectPath}`);
   let itemDiv = createItemDiv(itemName);
-  let select = true;
   itemDiv.addEventListener('click', () => {
-
-    if (select) {
-      console.log(`selected div with name ${itemDiv.children[0].textContent}`);
-      editContainer.setAttribute('ref', itemDiv.id);
-      ingredientContainer.style.display = 'none';
-      editContainer.style.display = 'flex';
-      editContainer.style.flexDirection = 'column';
-      // select = false;
-    } else {
-      ingredientContainer.style.display = 'flex';
-      ingredientContainer.style.flexDirection = 'column';
-      editContainer.style.display = 'none';
-      select = true;
-    }
+    editContainers.childNodes.forEach((element) => {
+      if (element.style.display != 'none') {
+        element.style.display = 'none';
+      }
+    });
     
+    console.log(`selected div with name ${itemDiv.children[0].textContent}`);
+    editContainer.setAttribute('ref', itemDiv.id);
+    ingredientContainer.style.display = 'none'; // hard coded for now
+    editContainer.style.display = 'flex';
+    editContainer.style.flexDirection = 'column';
+
   })
   for (const option in data) {
     const optionDiv = createOptionDiv(option, itemDiv.id);

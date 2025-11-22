@@ -48,6 +48,23 @@ export async function writeUserData(parentId, childId) {
   });
 }
 
+export async function setUserData(path, value) {
+  console.log('write ran');
+  console.log(`path: ${path}, value: ${value}`);
+  const db = getDatabase();
+  const currRef = ref(db, path);
+  await set(currRef, value)
+  .then(() => {
+    console.log('data set successfully');
+    return true;
+  })
+  .catch ((error) => {
+    console.error(`Error setting node: ${error}`);
+    return false;
+  });
+
+};
+
 
 export async function removeUserData(parentId, userId) {
   console.log('remove ran');
