@@ -1,8 +1,8 @@
 // Import the functions you need from the SDKs you need
-    import { getDatabase, ref, set, remove, onValue, child, get, update} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
+    import { getDatabase, ref, set, remove, onValue, child, get, update, push} from "https://www.gstatic.com/firebasejs/12.5.0/firebase-database.js";
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.5.0/firebase-analytics.js";
-    //   import { }
+
     // TODO: Add SDKs for Firebase products that you want to use
     // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -18,24 +18,17 @@
         appId: "1:1006827305493:web:064d16ab5f5bb80e16ec1c",
         measurementId: "G-9YM8L6TS3X"
     };
+    
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
-    // Initialize the FirebaseUI Widget using Firebase.
-    // var ui = new firebaseui.auth.AuthUI(firebase.auth());
 
-    //   ui.start('#firebaseui-auth-container', {
-    //   signInOptions: [
-    //     firebase.auth.EmailAuthProvider.PROVIDER_ID
-    //   ],
-    //   // Other config options...
-    // });
 
 
 export async function writeUserData(parentId, childId) {
-  console.log('write ran');
-  console.log(`parentId: ${parentId}, childId: ${childId}`);
+  // console.log('write ran');
+  // console.log(`parentId: ${parentId}, childId: ${childId}`);
   const db = getDatabase();
   await set(ref(db, parentId + '/' + childId), '')
   .then(() => {
@@ -46,6 +39,21 @@ export async function writeUserData(parentId, childId) {
     console.error(`Error setting node: ${error}`);
     return false;
   });
+}
+
+export async function writeUserObject(path, object) {
+  const db = getDatabase();
+  const myRef = ref(db, path);
+  await set(myRef, object)
+  .then(() => {
+    console.log('data set successfully');
+    return true;
+  })
+  .catch ((error) => {
+    console.error(`Error setting node: ${error}`);
+    return false;
+  });
+
 }
 
 export async function setUserData(path, value) {
@@ -98,6 +106,23 @@ export async function readUserData(parentId, childId) { // a single snapshot of 
   return data;
 }
 
+export async function readObjectData(parentId, childId) { // a single snapshot of the data
+  const dbRef = ref(getDatabase());
+  let data = {};
+  await get(child(dbRef, parentId + '/' + childId)).then((snapshot) => {
+    if (snapshot.exists()){
+      data = snapshot.val();
+    } else {
+      console.log('No data available');
+    }
+  }).catch((error) => {
+    console.error(error);
+    // return false;
+  });
+  // console.log(myMenuItems);
+  return data;
+}
+
 export async function updateUserData(parentPath, child, val) {
     const db = getDatabase();
     const parentData = await readUserData(parentPath, '');
@@ -110,4 +135,29 @@ export async function updateUserData(parentPath, child, val) {
     .catch((error) => {
         console.error(error);
     });
+}
+
+export async function pushUserData(path, data) {
+   const myRef = ref(getDatabase(), path);
+   const newRef = push(myRef);
+  //  console.log(data);
+  //  console.log(`NEWREF: ${newRef} MYDATA: ${data}`);
+   let myData = {
+      id: newRef.key,
+      name: data.name,
+      category: data.category,
+      description: data.description,
+      price: data.price,
+      object: data.object
+   }
+   console.log(myData);
+   await set(newRef, myData)
+   .then(() => {
+    console.log('data set successfully');
+    return true;
+  })
+  .catch ((error) => {
+    console.error(`Error setting node: ${error}`);
+    return false;
+  });
 }
